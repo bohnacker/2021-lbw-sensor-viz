@@ -33,6 +33,7 @@ export const dataLatest = writable({}, function start(set) {
 });
 
 
+
 let dataByTimeMaxCount = 10;
 let dataByTimeArray = [];
 export const dataByTime = derived(
@@ -45,7 +46,8 @@ export const dataByTime = derived(
 );
 
 
-let dataByUserMaxCount = 30;
+// let dataByUserMaxTime = 5000;   // in milliseconds
+let dataByUserMaxCount = 100;
 let dataByUserObject = {};
 export const dataByUser = derived(
 	dataLatest,
@@ -53,6 +55,12 @@ export const dataByUser = derived(
 		if (Object.keys($dataLatest).length > 0) {
 			if (!dataByUserObject[$dataLatest.user]) dataByUserObject[$dataLatest.user] = []; 
 			dataByUserObject[$dataLatest.user].push($dataLatest);
+
+			// dataByUserObject[$dataLatest.user]
+			// let now = Date.now();
+			// while (dataByUserObject[$dataLatest.user][0].timestamp < now - dataByUserObject) &&  {
+			// 	dataByUserObject[$dataLatest.user].shift();
+			// }
 			if (dataByUserObject[$dataLatest.user].length > dataByUserMaxCount) dataByUserObject[$dataLatest.user].shift();
 		}
 		return dataByUserObject;

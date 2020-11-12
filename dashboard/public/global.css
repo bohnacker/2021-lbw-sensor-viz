@@ -5,7 +5,8 @@ html, body {
 }
 
 body {
-	background-color: hsl(120deg, 40%, 90%);
+	background-color: hsl(180deg, 40%, 93%);
+	/* background-color: GhostWhite; */
 	color: #333;
 	margin: 0;
 	padding: 20px;

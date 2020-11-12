@@ -52,6 +52,12 @@ var app = (function () {
     function detach(node) {
         node.parentNode.removeChild(node);
     }
+    function destroy_each(iterations, detaching) {
+        for (let i = 0; i < iterations.length; i += 1) {
+            if (iterations[i])
+                iterations[i].d(detaching);
+        }
+    }
     function element(name) {
         return document.createElement(name);
     }
@@ -80,6 +86,9 @@ var app = (function () {
     function children(element) {
         return Array.from(element.childNodes);
     }
+    function set_style(node, key, value, important) {
+        node.style.setProperty(key, value, important ? 'important' : '');
+    }
     function custom_event(type, detail) {
         const e = document.createEvent('CustomEvent');
         e.initCustomEvent(type, false, false, detail);
@@ -89,6 +98,14 @@ var app = (function () {
     let current_component;
     function set_current_component(component) {
         current_component = component;
+    }
+    function get_current_component() {
+        if (!current_component)
+            throw new Error('Function called outside component initialization');
+        return current_component;
+    }
+    function onMount(fn) {
+        get_current_component().$$.on_mount.push(fn);
     }
 
     const dirty_components = [];
@@ -615,6 +632,7 @@ var app = (function () {
     });
 
 
+
     let dataByTimeMaxCount = 10;
     let dataByTimeArray = [];
     const dataByTime = derived(
@@ -627,7 +645,8 @@ var app = (function () {
     );
 
 
-    let dataByUserMaxCount = 30;
+    // let dataByUserMaxTime = 5000;   // in milliseconds
+    let dataByUserMaxCount = 100;
     let dataByUserObject = {};
     const dataByUser = derived(
     	dataLatest,
@@ -635,6 +654,12 @@ var app = (function () {
     		if (Object.keys($dataLatest).length > 0) {
     			if (!dataByUserObject[$dataLatest.user]) dataByUserObject[$dataLatest.user] = []; 
     			dataByUserObject[$dataLatest.user].push($dataLatest);
+
+    			// dataByUserObject[$dataLatest.user]
+    			// let now = Date.now();
+    			// while (dataByUserObject[$dataLatest.user][0].timestamp < now - dataByUserObject) &&  {
+    			// 	dataByUserObject[$dataLatest.user].shift();
+    			// }
     			if (dataByUserObject[$dataLatest.user].length > dataByUserMaxCount) dataByUserObject[$dataLatest.user].shift();
     		}
     		return dataByUserObject;
@@ -666,49 +691,75 @@ var app = (function () {
 
     function get_each_context(ctx, list, i) {
     	const child_ctx = ctx.slice();
-    	child_ctx[5] = list[i];
+    	child_ctx[7] = list[i];
     	return child_ctx;
     }
 
-    // (29:2) {#each rects as rect (rect.uid)}
+    // (57:4) {#each rects as rect (rect.uid)}
     function create_each_block(key_1, ctx) {
-    	let rect;
-    	let rect_x_value;
-    	let rect_y_value;
-    	let rect_width_value;
-    	let rect_opacity_value;
+    	let rect0;
+    	let rect0_x_value;
+    	let rect0_y_value;
+    	let rect0_width_value;
+    	let rect0_visibility_value;
+    	let rect1;
+    	let rect1_x_value;
+    	let rect1_y_value;
+    	let rect1_width_value;
+    	let rect1_visibility_value;
 
     	const block = {
     		key: key_1,
     		first: null,
     		c: function create() {
-    			rect = svg_element("rect");
-    			attr_dev(rect, "x", rect_x_value = /*rect*/ ctx[5].x);
-    			attr_dev(rect, "y", rect_y_value = 0);
-    			attr_dev(rect, "width", rect_width_value = 2);
-    			attr_dev(rect, "height", /*height*/ ctx[1]);
-    			attr_dev(rect, "opacity", rect_opacity_value = /*rect*/ ctx[5].opacity);
-    			add_location(rect, file, 29, 4, 666);
-    			this.first = rect;
+    			rect0 = svg_element("rect");
+    			rect1 = svg_element("rect");
+    			attr_dev(rect0, "x", rect0_x_value = /*rect*/ ctx[7].x);
+    			attr_dev(rect0, "y", rect0_y_value = 0);
+    			attr_dev(rect0, "width", rect0_width_value = 2);
+    			attr_dev(rect0, "height", /*height*/ ctx[1]);
+    			attr_dev(rect0, "visibility", rect0_visibility_value = /*rect*/ ctx[7].visibility);
+    			add_location(rect0, file, 57, 6, 1545);
+    			attr_dev(rect1, "x", rect1_x_value = /*rect*/ ctx[7].x - /*width*/ ctx[0]);
+    			attr_dev(rect1, "y", rect1_y_value = 0);
+    			attr_dev(rect1, "width", rect1_width_value = 2);
+    			attr_dev(rect1, "height", /*height*/ ctx[1]);
+    			attr_dev(rect1, "visibility", rect1_visibility_value = /*rect*/ ctx[7].visibility);
+    			add_location(rect1, file, 58, 6, 1632);
+    			this.first = rect0;
     		},
     		m: function mount(target, anchor) {
-    			insert_dev(target, rect, anchor);
+    			insert_dev(target, rect0, anchor);
+    			insert_dev(target, rect1, anchor);
     		},
     		p: function update(ctx, dirty) {
-    			if (dirty & /*rects*/ 4 && rect_x_value !== (rect_x_value = /*rect*/ ctx[5].x)) {
-    				attr_dev(rect, "x", rect_x_value);
+    			if (dirty & /*rects*/ 8 && rect0_x_value !== (rect0_x_value = /*rect*/ ctx[7].x)) {
+    				attr_dev(rect0, "x", rect0_x_value);
     			}
 
     			if (dirty & /*height*/ 2) {
-    				attr_dev(rect, "height", /*height*/ ctx[1]);
+    				attr_dev(rect0, "height", /*height*/ ctx[1]);
     			}
 
-    			if (dirty & /*rects*/ 4 && rect_opacity_value !== (rect_opacity_value = /*rect*/ ctx[5].opacity)) {
-    				attr_dev(rect, "opacity", rect_opacity_value);
+    			if (dirty & /*rects*/ 8 && rect0_visibility_value !== (rect0_visibility_value = /*rect*/ ctx[7].visibility)) {
+    				attr_dev(rect0, "visibility", rect0_visibility_value);
+    			}
+
+    			if (dirty & /*rects, width*/ 9 && rect1_x_value !== (rect1_x_value = /*rect*/ ctx[7].x - /*width*/ ctx[0])) {
+    				attr_dev(rect1, "x", rect1_x_value);
+    			}
+
+    			if (dirty & /*height*/ 2) {
+    				attr_dev(rect1, "height", /*height*/ ctx[1]);
+    			}
+
+    			if (dirty & /*rects*/ 8 && rect1_visibility_value !== (rect1_visibility_value = /*rect*/ ctx[7].visibility)) {
+    				attr_dev(rect1, "visibility", rect1_visibility_value);
     			}
     		},
     		d: function destroy(detaching) {
-    			if (detaching) detach_dev(rect);
+    			if (detaching) detach_dev(rect0);
+    			if (detaching) detach_dev(rect1);
     		}
     	};
 
@@ -716,7 +767,7 @@ var app = (function () {
     		block,
     		id: create_each_block.name,
     		type: "each",
-    		source: "(29:2) {#each rects as rect (rect.uid)}",
+    		source: "(57:4) {#each rects as rect (rect.uid)}",
     		ctx
     	});
 
@@ -725,11 +776,13 @@ var app = (function () {
 
     function create_fragment(ctx) {
     	let svg;
+    	let g;
     	let each_blocks = [];
     	let each_1_lookup = new Map();
-    	let each_value = /*rects*/ ctx[2];
+    	let g_transform_value;
+    	let each_value = /*rects*/ ctx[3];
     	validate_each_argument(each_value);
-    	const get_key = ctx => /*rect*/ ctx[5].uid;
+    	const get_key = ctx => /*rect*/ ctx[7].uid;
     	validate_each_keys(ctx, each_value, get_each_context, get_key);
 
     	for (let i = 0; i < each_value.length; i += 1) {
@@ -741,31 +794,40 @@ var app = (function () {
     	const block = {
     		c: function create() {
     			svg = svg_element("svg");
+    			g = svg_element("g");
 
     			for (let i = 0; i < each_blocks.length; i += 1) {
     				each_blocks[i].c();
     			}
 
+    			attr_dev(g, "id", "mover");
+    			attr_dev(g, "transform", g_transform_value = "translate(" + /*animationPosition*/ ctx[2] + " 0)");
+    			add_location(g, file, 55, 2, 1442);
     			attr_dev(svg, "width", /*width*/ ctx[0]);
     			attr_dev(svg, "height", /*height*/ ctx[1]);
-    			add_location(svg, file, 27, 0, 604);
+    			add_location(svg, file, 54, 0, 1417);
     		},
     		l: function claim(nodes) {
     			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, svg, anchor);
+    			append_dev(svg, g);
 
     			for (let i = 0; i < each_blocks.length; i += 1) {
-    				each_blocks[i].m(svg, null);
+    				each_blocks[i].m(g, null);
     			}
     		},
     		p: function update(ctx, [dirty]) {
-    			if (dirty & /*rects, height*/ 6) {
-    				const each_value = /*rects*/ ctx[2];
+    			if (dirty & /*rects, width, height*/ 11) {
+    				const each_value = /*rects*/ ctx[3];
     				validate_each_argument(each_value);
     				validate_each_keys(ctx, each_value, get_each_context, get_key);
-    				each_blocks = update_keyed_each(each_blocks, dirty, get_key, 1, ctx, each_value, each_1_lookup, svg, destroy_block, create_each_block, null, get_each_context);
+    				each_blocks = update_keyed_each(each_blocks, dirty, get_key, 1, ctx, each_value, each_1_lookup, g, destroy_block, create_each_block, null, get_each_context);
+    			}
+
+    			if (dirty & /*animationPosition*/ 4 && g_transform_value !== (g_transform_value = "translate(" + /*animationPosition*/ ctx[2] + " 0)")) {
+    				attr_dev(g, "transform", g_transform_value);
     			}
 
     			if (dirty & /*width*/ 1) {
@@ -799,15 +861,33 @@ var app = (function () {
     }
 
     function instance($$self, $$props, $$invalidate) {
-    	let $appActive;
-    	validate_store(appActive, "appActive");
-    	component_subscribe($$self, appActive, $$value => $$invalidate(4, $appActive = $$value));
     	let { $$slots: slots = {}, $$scope } = $$props;
     	validate_slots("Timeline", slots, []);
     	let { data = [] } = $$props;
     	let { width = 300 } = $$props;
     	let { height = 50 } = $$props;
+    	let mountTime = Date.now();
+    	let animationDuration = 5; // in seconds
+    	let animationPosition = 0;
+
+    	// implement a loop when component is mounted
+    	onMount(() => {
+    		let frame;
+    		$$invalidate(5, mountTime = Date.now());
+
+    		function loop() {
+    			frame = requestAnimationFrame(loop);
+    			let now = Date.now();
+    			$$invalidate(2, animationPosition = -((now - mountTime) / (animationDuration * 1000) % 1) * width);
+    		}
+
+    		loop();
+    		return () => cancelAnimationFrame(frame);
+    	});
+
+    	// update rects when data changes
     	let rects = [];
+
     	const writable_props = ["data", "width", "height"];
 
     	Object.keys($$props).forEach(key => {
@@ -815,25 +895,31 @@ var app = (function () {
     	});
 
     	$$self.$$set = $$props => {
-    		if ("data" in $$props) $$invalidate(3, data = $$props.data);
+    		if ("data" in $$props) $$invalidate(4, data = $$props.data);
     		if ("width" in $$props) $$invalidate(0, width = $$props.width);
     		if ("height" in $$props) $$invalidate(1, height = $$props.height);
     	};
 
     	$$self.$capture_state = () => ({
+    		onMount,
     		appActive,
     		data,
     		width,
     		height,
-    		rects,
-    		$appActive
+    		mountTime,
+    		animationDuration,
+    		animationPosition,
+    		rects
     	});
 
     	$$self.$inject_state = $$props => {
-    		if ("data" in $$props) $$invalidate(3, data = $$props.data);
+    		if ("data" in $$props) $$invalidate(4, data = $$props.data);
     		if ("width" in $$props) $$invalidate(0, width = $$props.width);
     		if ("height" in $$props) $$invalidate(1, height = $$props.height);
-    		if ("rects" in $$props) $$invalidate(2, rects = $$props.rects);
+    		if ("mountTime" in $$props) $$invalidate(5, mountTime = $$props.mountTime);
+    		if ("animationDuration" in $$props) $$invalidate(6, animationDuration = $$props.animationDuration);
+    		if ("animationPosition" in $$props) $$invalidate(2, animationPosition = $$props.animationPosition);
+    		if ("rects" in $$props) $$invalidate(3, rects = $$props.rects);
     	};
 
     	if ($$props && "$$inject" in $$props) {
@@ -841,16 +927,20 @@ var app = (function () {
     	}
 
     	$$self.$$.update = () => {
-    		if ($$self.$$.dirty & /*$appActive, data, width, rects*/ 29) {
-    			 if ($appActive) {
+    		if ($$self.$$.dirty & /*data, width, mountTime, rects*/ 57) {
+    			 {
     				let now = Date.now();
-    				$$invalidate(2, rects = []);
+    				$$invalidate(3, rects = []);
 
     				for (let i = 0; i < data.length; i++) {
     					let rect = {
     						uid: data[i].uid,
-    						x: width - (now - data[i].timestamp) / 20,
-    						opacity: i / data.length
+    						timestamp: data[i].timestamp,
+    						x: width - 2 + (data[i].timestamp - mountTime) / (animationDuration * 1000) % 1 * width,
+    						opacity: i / data.length,
+    						visibility: now - data[i].timestamp > animationDuration * 1000 - 200
+    						? "hidden"
+    						: "visible"
     					};
 
     					rects.push(rect);
@@ -859,13 +949,13 @@ var app = (function () {
     		}
     	};
 
-    	return [width, height, rects, data];
+    	return [width, height, animationPosition, rects, data];
     }
 
     class Timeline extends SvelteComponentDev {
     	constructor(options) {
     		super(options);
-    		init(this, options, instance, create_fragment, safe_not_equal, { data: 3, width: 0, height: 1 });
+    		init(this, options, instance, create_fragment, safe_not_equal, { data: 4, width: 0, height: 1 });
 
     		dispatch_dev("SvelteRegisterComponent", {
     			component: this,
@@ -900,93 +990,180 @@ var app = (function () {
     	}
     }
 
-    /* src/WidgetUser.svelte generated by Svelte v3.29.4 */
-    const file$1 = "src/WidgetUser.svelte";
+    /* src/ValueGraph.svelte generated by Svelte v3.29.4 */
+    const file$1 = "src/ValueGraph.svelte";
 
-    function create_fragment$1(ctx) {
-    	let div4;
-    	let div3;
-    	let div0;
-    	let t0_value = /*data*/ ctx[0][0].toUpperCase() + "";
-    	let t0;
-    	let t1;
-    	let div1;
-    	let code;
-    	let t2_value = JSON.stringify(/*dataLatestPayload*/ ctx[1], null, 2) + "";
-    	let t2;
-    	let t3;
-    	let div2;
-    	let timeline;
-    	let current;
+    function get_each_context$1(ctx, list, i) {
+    	const child_ctx = ctx.slice();
+    	child_ctx[11] = list[i];
+    	return child_ctx;
+    }
 
-    	timeline = new Timeline({
-    			props: { data: /*data*/ ctx[0][1], height: 20 },
-    			$$inline: true
-    		});
+    // (75:4) {#each elements as element}
+    function create_each_block$1(ctx) {
+    	let circle0;
+    	let circle0_cx_value;
+    	let circle0_cy_value;
+    	let circle0_visibility_value;
+    	let circle0_fill_value;
+    	let circle1;
+    	let circle1_cx_value;
+    	let circle1_cy_value;
+    	let circle1_visibility_value;
+    	let circle1_fill_value;
 
     	const block = {
     		c: function create() {
-    			div4 = element("div");
-    			div3 = element("div");
-    			div0 = element("div");
-    			t0 = text(t0_value);
-    			t1 = space();
-    			div1 = element("div");
-    			code = element("code");
-    			t2 = text(t2_value);
-    			t3 = space();
-    			div2 = element("div");
-    			create_component(timeline.$$.fragment);
-    			attr_dev(div0, "id", "head");
-    			attr_dev(div0, "class", "flex-item svelte-o15w2v");
-    			add_location(div0, file$1, 27, 4, 566);
-    			add_location(code, file$1, 32, 6, 690);
-    			attr_dev(div1, "id", "body");
-    			attr_dev(div1, "class", "flex-item svelte-o15w2v");
-    			add_location(div1, file$1, 31, 4, 650);
-    			attr_dev(div2, "class", "timeline flex-item svelte-o15w2v");
-    			add_location(div2, file$1, 37, 4, 780);
-    			attr_dev(div3, "class", "flex-container svelte-o15w2v");
-    			add_location(div3, file$1, 25, 2, 532);
-    			attr_dev(div4, "class", "widget-box svelte-o15w2v");
-    			add_location(div4, file$1, 24, 0, 505);
+    			circle0 = svg_element("circle");
+    			circle1 = svg_element("circle");
+    			attr_dev(circle0, "cx", circle0_cx_value = /*element*/ ctx[11].x);
+    			attr_dev(circle0, "cy", circle0_cy_value = /*element*/ ctx[11].y);
+    			attr_dev(circle0, "r", "2");
+    			attr_dev(circle0, "visibility", circle0_visibility_value = /*element*/ ctx[11].visibility);
+    			attr_dev(circle0, "fill", circle0_fill_value = /*element*/ ctx[11].color);
+    			add_location(circle0, file$1, 75, 6, 2121);
+    			attr_dev(circle1, "cx", circle1_cx_value = /*element*/ ctx[11].x - /*width*/ ctx[0]);
+    			attr_dev(circle1, "cy", circle1_cy_value = /*element*/ ctx[11].y);
+    			attr_dev(circle1, "r", "2");
+    			attr_dev(circle1, "visibility", circle1_visibility_value = /*element*/ ctx[11].visibility);
+    			attr_dev(circle1, "fill", circle1_fill_value = /*element*/ ctx[11].color);
+    			add_location(circle1, file$1, 76, 6, 2227);
+    		},
+    		m: function mount(target, anchor) {
+    			insert_dev(target, circle0, anchor);
+    			insert_dev(target, circle1, anchor);
+    		},
+    		p: function update(ctx, dirty) {
+    			if (dirty & /*elements*/ 8 && circle0_cx_value !== (circle0_cx_value = /*element*/ ctx[11].x)) {
+    				attr_dev(circle0, "cx", circle0_cx_value);
+    			}
+
+    			if (dirty & /*elements*/ 8 && circle0_cy_value !== (circle0_cy_value = /*element*/ ctx[11].y)) {
+    				attr_dev(circle0, "cy", circle0_cy_value);
+    			}
+
+    			if (dirty & /*elements*/ 8 && circle0_visibility_value !== (circle0_visibility_value = /*element*/ ctx[11].visibility)) {
+    				attr_dev(circle0, "visibility", circle0_visibility_value);
+    			}
+
+    			if (dirty & /*elements*/ 8 && circle0_fill_value !== (circle0_fill_value = /*element*/ ctx[11].color)) {
+    				attr_dev(circle0, "fill", circle0_fill_value);
+    			}
+
+    			if (dirty & /*elements, width*/ 9 && circle1_cx_value !== (circle1_cx_value = /*element*/ ctx[11].x - /*width*/ ctx[0])) {
+    				attr_dev(circle1, "cx", circle1_cx_value);
+    			}
+
+    			if (dirty & /*elements*/ 8 && circle1_cy_value !== (circle1_cy_value = /*element*/ ctx[11].y)) {
+    				attr_dev(circle1, "cy", circle1_cy_value);
+    			}
+
+    			if (dirty & /*elements*/ 8 && circle1_visibility_value !== (circle1_visibility_value = /*element*/ ctx[11].visibility)) {
+    				attr_dev(circle1, "visibility", circle1_visibility_value);
+    			}
+
+    			if (dirty & /*elements*/ 8 && circle1_fill_value !== (circle1_fill_value = /*element*/ ctx[11].color)) {
+    				attr_dev(circle1, "fill", circle1_fill_value);
+    			}
+    		},
+    		d: function destroy(detaching) {
+    			if (detaching) detach_dev(circle0);
+    			if (detaching) detach_dev(circle1);
+    		}
+    	};
+
+    	dispatch_dev("SvelteRegisterBlock", {
+    		block,
+    		id: create_each_block$1.name,
+    		type: "each",
+    		source: "(75:4) {#each elements as element}",
+    		ctx
+    	});
+
+    	return block;
+    }
+
+    function create_fragment$1(ctx) {
+    	let svg;
+    	let g;
+    	let g_transform_value;
+    	let each_value = /*elements*/ ctx[3];
+    	validate_each_argument(each_value);
+    	let each_blocks = [];
+
+    	for (let i = 0; i < each_value.length; i += 1) {
+    		each_blocks[i] = create_each_block$1(get_each_context$1(ctx, each_value, i));
+    	}
+
+    	const block = {
+    		c: function create() {
+    			svg = svg_element("svg");
+    			g = svg_element("g");
+
+    			for (let i = 0; i < each_blocks.length; i += 1) {
+    				each_blocks[i].c();
+    			}
+
+    			attr_dev(g, "id", "mover");
+    			attr_dev(g, "transform", g_transform_value = "translate(" + /*animationPosition*/ ctx[2] + " 0)");
+    			add_location(g, file$1, 73, 2, 2023);
+    			attr_dev(svg, "width", /*width*/ ctx[0]);
+    			attr_dev(svg, "height", /*height*/ ctx[1]);
+    			add_location(svg, file$1, 72, 0, 1998);
     		},
     		l: function claim(nodes) {
     			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
     		},
     		m: function mount(target, anchor) {
-    			insert_dev(target, div4, anchor);
-    			append_dev(div4, div3);
-    			append_dev(div3, div0);
-    			append_dev(div0, t0);
-    			append_dev(div3, t1);
-    			append_dev(div3, div1);
-    			append_dev(div1, code);
-    			append_dev(code, t2);
-    			append_dev(div3, t3);
-    			append_dev(div3, div2);
-    			mount_component(timeline, div2, null);
-    			current = true;
+    			insert_dev(target, svg, anchor);
+    			append_dev(svg, g);
+
+    			for (let i = 0; i < each_blocks.length; i += 1) {
+    				each_blocks[i].m(g, null);
+    			}
     		},
     		p: function update(ctx, [dirty]) {
-    			if ((!current || dirty & /*data*/ 1) && t0_value !== (t0_value = /*data*/ ctx[0][0].toUpperCase() + "")) set_data_dev(t0, t0_value);
-    			if ((!current || dirty & /*dataLatestPayload*/ 2) && t2_value !== (t2_value = JSON.stringify(/*dataLatestPayload*/ ctx[1], null, 2) + "")) set_data_dev(t2, t2_value);
-    			const timeline_changes = {};
-    			if (dirty & /*data*/ 1) timeline_changes.data = /*data*/ ctx[0][1];
-    			timeline.$set(timeline_changes);
+    			if (dirty & /*elements, width*/ 9) {
+    				each_value = /*elements*/ ctx[3];
+    				validate_each_argument(each_value);
+    				let i;
+
+    				for (i = 0; i < each_value.length; i += 1) {
+    					const child_ctx = get_each_context$1(ctx, each_value, i);
+
+    					if (each_blocks[i]) {
+    						each_blocks[i].p(child_ctx, dirty);
+    					} else {
+    						each_blocks[i] = create_each_block$1(child_ctx);
+    						each_blocks[i].c();
+    						each_blocks[i].m(g, null);
+    					}
+    				}
+
+    				for (; i < each_blocks.length; i += 1) {
+    					each_blocks[i].d(1);
+    				}
+
+    				each_blocks.length = each_value.length;
+    			}
+
+    			if (dirty & /*animationPosition*/ 4 && g_transform_value !== (g_transform_value = "translate(" + /*animationPosition*/ ctx[2] + " 0)")) {
+    				attr_dev(g, "transform", g_transform_value);
+    			}
+
+    			if (dirty & /*width*/ 1) {
+    				attr_dev(svg, "width", /*width*/ ctx[0]);
+    			}
+
+    			if (dirty & /*height*/ 2) {
+    				attr_dev(svg, "height", /*height*/ ctx[1]);
+    			}
     		},
-    		i: function intro(local) {
-    			if (current) return;
-    			transition_in(timeline.$$.fragment, local);
-    			current = true;
-    		},
-    		o: function outro(local) {
-    			transition_out(timeline.$$.fragment, local);
-    			current = false;
-    		},
+    		i: noop,
+    		o: noop,
     		d: function destroy(detaching) {
-    			if (detaching) detach_dev(div4);
-    			destroy_component(timeline);
+    			if (detaching) detach_dev(svg);
+    			destroy_each(each_blocks, detaching);
     		}
     	};
 
@@ -1003,31 +1180,75 @@ var app = (function () {
 
     function instance$1($$self, $$props, $$invalidate) {
     	let { $$slots: slots = {}, $$scope } = $$props;
-    	validate_slots("WidgetUser", slots, []);
+    	validate_slots("ValueGraph", slots, []);
     	let { data = [] } = $$props;
-    	let dataLatest;
-    	let dataLatestPayload;
-    	const writable_props = ["data"];
+    	let { width = 300 } = $$props;
+    	let { height = 50 } = $$props;
+    	let mountTime = Date.now();
+    	let animationDuration = 5; // in seconds
+    	let animationPosition = 0;
+    	let minValue = Number.MAX_VALUE;
+    	let maxValue = -Number.MAX_VALUE;
+    	let alltimeMinValue = minValue;
+    	let alltimeMaxValue = maxValue;
+
+    	// implement a loop when component is mounted
+    	onMount(() => {
+    		let frame;
+    		$$invalidate(5, mountTime = Date.now());
+
+    		function loop() {
+    			frame = requestAnimationFrame(loop);
+    			let now = Date.now();
+    			$$invalidate(2, animationPosition = -((now - mountTime) / (animationDuration * 1000) % 1) * width);
+    		}
+
+    		loop();
+    		return () => cancelAnimationFrame(frame);
+    	});
+
+    	// update elements when data changes
+    	let elements = [];
+
+    	const writable_props = ["data", "width", "height"];
 
     	Object.keys($$props).forEach(key => {
-    		if (!~writable_props.indexOf(key) && key.slice(0, 2) !== "$$") console.warn(`<WidgetUser> was created with unknown prop '${key}'`);
+    		if (!~writable_props.indexOf(key) && key.slice(0, 2) !== "$$") console.warn(`<ValueGraph> was created with unknown prop '${key}'`);
     	});
 
     	$$self.$$set = $$props => {
-    		if ("data" in $$props) $$invalidate(0, data = $$props.data);
+    		if ("data" in $$props) $$invalidate(4, data = $$props.data);
+    		if ("width" in $$props) $$invalidate(0, width = $$props.width);
+    		if ("height" in $$props) $$invalidate(1, height = $$props.height);
     	};
 
     	$$self.$capture_state = () => ({
-    		Timeline,
+    		onMount,
     		data,
-    		dataLatest,
-    		dataLatestPayload
+    		width,
+    		height,
+    		mountTime,
+    		animationDuration,
+    		animationPosition,
+    		minValue,
+    		maxValue,
+    		alltimeMinValue,
+    		alltimeMaxValue,
+    		elements
     	});
 
     	$$self.$inject_state = $$props => {
-    		if ("data" in $$props) $$invalidate(0, data = $$props.data);
-    		if ("dataLatest" in $$props) $$invalidate(2, dataLatest = $$props.dataLatest);
-    		if ("dataLatestPayload" in $$props) $$invalidate(1, dataLatestPayload = $$props.dataLatestPayload);
+    		if ("data" in $$props) $$invalidate(4, data = $$props.data);
+    		if ("width" in $$props) $$invalidate(0, width = $$props.width);
+    		if ("height" in $$props) $$invalidate(1, height = $$props.height);
+    		if ("mountTime" in $$props) $$invalidate(5, mountTime = $$props.mountTime);
+    		if ("animationDuration" in $$props) $$invalidate(10, animationDuration = $$props.animationDuration);
+    		if ("animationPosition" in $$props) $$invalidate(2, animationPosition = $$props.animationPosition);
+    		if ("minValue" in $$props) $$invalidate(6, minValue = $$props.minValue);
+    		if ("maxValue" in $$props) $$invalidate(7, maxValue = $$props.maxValue);
+    		if ("alltimeMinValue" in $$props) $$invalidate(8, alltimeMinValue = $$props.alltimeMinValue);
+    		if ("alltimeMaxValue" in $$props) $$invalidate(9, alltimeMaxValue = $$props.alltimeMaxValue);
+    		if ("elements" in $$props) $$invalidate(3, elements = $$props.elements);
     	};
 
     	if ($$props && "$$inject" in $$props) {
@@ -1035,35 +1256,744 @@ var app = (function () {
     	}
 
     	$$self.$$.update = () => {
-    		if ($$self.$$.dirty & /*data, dataLatest*/ 5) {
+    		if ($$self.$$.dirty & /*data, width, mountTime, minValue, maxValue, height, alltimeMinValue, alltimeMaxValue, elements*/ 1019) {
     			 {
-    				$$invalidate(2, dataLatest = data[1][data[1].length - 1]);
+    				let now = Date.now();
+    				$$invalidate(3, elements = []);
+    				$$invalidate(6, minValue = Number.MAX_VALUE);
+    				$$invalidate(7, maxValue = -Number.MAX_VALUE);
 
-    				//console.log(dataLatest);
-    				$$invalidate(1, dataLatestPayload = dataLatest.origPayload);
+    				for (let i = 0; i < data.length - 1; i++) {
+    					let x1 = width - 2 + (data[i].timestamp - mountTime) / (animationDuration * 1000) % 1 * width;
 
-    				try {
-    					$$invalidate(1, dataLatestPayload = JSON.parse(dataLatest.origPayload));
-    				} catch(error) {
-    					
+    					// let x2 = width - 2 + ((data[i+1].timestamp - mountTime) / (animationDuration * 1000) % 1) * width;
+    					// let y2 = height - data[i+1].value;    
+    					$$invalidate(6, minValue = Math.min(data[i].value - 0.1, minValue));
+
+    					$$invalidate(7, maxValue = Math.max(data[i].value * 1 + 0.1, maxValue));
+    					let y1 = height - 2 - (data[i].value - alltimeMinValue) / (alltimeMaxValue - alltimeMinValue) * (height - 4);
+
+    					let element = {
+    						uid: data[i].uid,
+    						timestamp: data[i].timestamp,
+    						x: x1,
+    						y: y1,
+    						color: data[i].color,
+    						visibility: now - data[i].timestamp > animationDuration * 1000 - 100
+    						? "hidden"
+    						: "visible"
+    					};
+
+    					elements.push(element);
     				}
-    			}
+
+    				$$invalidate(8, alltimeMinValue = Math.min(alltimeMinValue, minValue));
+    				$$invalidate(9, alltimeMaxValue = Math.max(alltimeMaxValue, maxValue));
+    			} // console.log(minValue, maxValue);
     		}
     	};
 
-    	return [data, dataLatestPayload];
+    	return [width, height, animationPosition, elements, data];
+    }
+
+    class ValueGraph extends SvelteComponentDev {
+    	constructor(options) {
+    		super(options);
+    		init(this, options, instance$1, create_fragment$1, safe_not_equal, { data: 4, width: 0, height: 1 });
+
+    		dispatch_dev("SvelteRegisterComponent", {
+    			component: this,
+    			tagName: "ValueGraph",
+    			options,
+    			id: create_fragment$1.name
+    		});
+    	}
+
+    	get data() {
+    		throw new Error("<ValueGraph>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	set data(value) {
+    		throw new Error("<ValueGraph>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	get width() {
+    		throw new Error("<ValueGraph>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	set width(value) {
+    		throw new Error("<ValueGraph>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	get height() {
+    		throw new Error("<ValueGraph>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	set height(value) {
+    		throw new Error("<ValueGraph>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+    }
+
+    /* src/ValueBox.svelte generated by Svelte v3.29.4 */
+    const file$2 = "src/ValueBox.svelte";
+
+    // (19:2) {#if showGraph}
+    function create_if_block(ctx) {
+    	let div;
+    	let valuegraph;
+    	let current;
+
+    	valuegraph = new ValueGraph({
+    			props: { data: /*dataStream*/ ctx[1], height: 40 },
+    			$$inline: true
+    		});
+
+    	const block = {
+    		c: function create() {
+    			div = element("div");
+    			create_component(valuegraph.$$.fragment);
+    			attr_dev(div, "class", "value-graph svelte-1x9y64s");
+    			add_location(div, file$2, 19, 4, 489);
+    		},
+    		m: function mount(target, anchor) {
+    			insert_dev(target, div, anchor);
+    			mount_component(valuegraph, div, null);
+    			current = true;
+    		},
+    		p: function update(ctx, dirty) {
+    			const valuegraph_changes = {};
+    			if (dirty & /*dataStream*/ 2) valuegraph_changes.data = /*dataStream*/ ctx[1];
+    			valuegraph.$set(valuegraph_changes);
+    		},
+    		i: function intro(local) {
+    			if (current) return;
+    			transition_in(valuegraph.$$.fragment, local);
+    			current = true;
+    		},
+    		o: function outro(local) {
+    			transition_out(valuegraph.$$.fragment, local);
+    			current = false;
+    		},
+    		d: function destroy(detaching) {
+    			if (detaching) detach_dev(div);
+    			destroy_component(valuegraph);
+    		}
+    	};
+
+    	dispatch_dev("SvelteRegisterBlock", {
+    		block,
+    		id: create_if_block.name,
+    		type: "if",
+    		source: "(19:2) {#if showGraph}",
+    		ctx
+    	});
+
+    	return block;
+    }
+
+    function create_fragment$2(ctx) {
+    	let div1;
+    	let div0;
+    	let span0;
+    	let t0_value = /*dataLatest*/ ctx[0].key + "";
+    	let t0;
+    	let t1;
+    	let span1;
+    	let t2_value = /*dataLatest*/ ctx[0].value + "";
+    	let t2;
+    	let t3;
+    	let current;
+    	let mounted;
+    	let dispose;
+    	let if_block = /*showGraph*/ ctx[2] && create_if_block(ctx);
+
+    	const block = {
+    		c: function create() {
+    			div1 = element("div");
+    			div0 = element("div");
+    			span0 = element("span");
+    			t0 = text(t0_value);
+    			t1 = space();
+    			span1 = element("span");
+    			t2 = text(t2_value);
+    			t3 = space();
+    			if (if_block) if_block.c();
+    			attr_dev(span0, "class", "param-key svelte-1x9y64s");
+    			set_style(span0, "color", /*dataLatest*/ ctx[0].color);
+    			add_location(span0, file$2, 15, 4, 321);
+    			attr_dev(span1, "class", "param-value svelte-1x9y64s");
+    			add_location(span1, file$2, 16, 4, 406);
+    			attr_dev(div0, "class", "key-value-box svelte-1x9y64s");
+    			add_location(div0, file$2, 14, 2, 289);
+    			attr_dev(div1, "class", "payload-param svelte-1x9y64s");
+    			add_location(div1, file$2, 13, 0, 225);
+    		},
+    		l: function claim(nodes) {
+    			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
+    		},
+    		m: function mount(target, anchor) {
+    			insert_dev(target, div1, anchor);
+    			append_dev(div1, div0);
+    			append_dev(div0, span0);
+    			append_dev(span0, t0);
+    			append_dev(div0, t1);
+    			append_dev(div0, span1);
+    			append_dev(span1, t2);
+    			append_dev(div1, t3);
+    			if (if_block) if_block.m(div1, null);
+    			current = true;
+
+    			if (!mounted) {
+    				dispose = listen_dev(
+    					div1,
+    					"click",
+    					function () {
+    						if (is_function(/*showGraph*/ ctx[2] = !/*showGraph*/ ctx[2])) (/*showGraph*/ ctx[2] = !/*showGraph*/ ctx[2]).apply(this, arguments);
+    					},
+    					false,
+    					false,
+    					false
+    				);
+
+    				mounted = true;
+    			}
+    		},
+    		p: function update(new_ctx, [dirty]) {
+    			ctx = new_ctx;
+    			if ((!current || dirty & /*dataLatest*/ 1) && t0_value !== (t0_value = /*dataLatest*/ ctx[0].key + "")) set_data_dev(t0, t0_value);
+
+    			if (!current || dirty & /*dataLatest*/ 1) {
+    				set_style(span0, "color", /*dataLatest*/ ctx[0].color);
+    			}
+
+    			if ((!current || dirty & /*dataLatest*/ 1) && t2_value !== (t2_value = /*dataLatest*/ ctx[0].value + "")) set_data_dev(t2, t2_value);
+
+    			if (/*showGraph*/ ctx[2]) {
+    				if (if_block) {
+    					if_block.p(ctx, dirty);
+
+    					if (dirty & /*showGraph*/ 4) {
+    						transition_in(if_block, 1);
+    					}
+    				} else {
+    					if_block = create_if_block(ctx);
+    					if_block.c();
+    					transition_in(if_block, 1);
+    					if_block.m(div1, null);
+    				}
+    			} else if (if_block) {
+    				group_outros();
+
+    				transition_out(if_block, 1, 1, () => {
+    					if_block = null;
+    				});
+
+    				check_outros();
+    			}
+    		},
+    		i: function intro(local) {
+    			if (current) return;
+    			transition_in(if_block);
+    			current = true;
+    		},
+    		o: function outro(local) {
+    			transition_out(if_block);
+    			current = false;
+    		},
+    		d: function destroy(detaching) {
+    			if (detaching) detach_dev(div1);
+    			if (if_block) if_block.d();
+    			mounted = false;
+    			dispose();
+    		}
+    	};
+
+    	dispatch_dev("SvelteRegisterBlock", {
+    		block,
+    		id: create_fragment$2.name,
+    		type: "component",
+    		source: "",
+    		ctx
+    	});
+
+    	return block;
+    }
+
+    function instance$2($$self, $$props, $$invalidate) {
+    	let { $$slots: slots = {}, $$scope } = $$props;
+    	validate_slots("ValueBox", slots, []);
+    	let { dataLatest } = $$props;
+    	let { dataStream } = $$props;
+    	let { showGraph = false } = $$props;
+    	const writable_props = ["dataLatest", "dataStream", "showGraph"];
+
+    	Object.keys($$props).forEach(key => {
+    		if (!~writable_props.indexOf(key) && key.slice(0, 2) !== "$$") console.warn(`<ValueBox> was created with unknown prop '${key}'`);
+    	});
+
+    	$$self.$$set = $$props => {
+    		if ("dataLatest" in $$props) $$invalidate(0, dataLatest = $$props.dataLatest);
+    		if ("dataStream" in $$props) $$invalidate(1, dataStream = $$props.dataStream);
+    		if ("showGraph" in $$props) $$invalidate(2, showGraph = $$props.showGraph);
+    	};
+
+    	$$self.$capture_state = () => ({
+    		ValueGraph,
+    		dataLatest,
+    		dataStream,
+    		showGraph
+    	});
+
+    	$$self.$inject_state = $$props => {
+    		if ("dataLatest" in $$props) $$invalidate(0, dataLatest = $$props.dataLatest);
+    		if ("dataStream" in $$props) $$invalidate(1, dataStream = $$props.dataStream);
+    		if ("showGraph" in $$props) $$invalidate(2, showGraph = $$props.showGraph);
+    	};
+
+    	if ($$props && "$$inject" in $$props) {
+    		$$self.$inject_state($$props.$$inject);
+    	}
+
+    	return [dataLatest, dataStream, showGraph];
+    }
+
+    class ValueBox extends SvelteComponentDev {
+    	constructor(options) {
+    		super(options);
+
+    		init(this, options, instance$2, create_fragment$2, safe_not_equal, {
+    			dataLatest: 0,
+    			dataStream: 1,
+    			showGraph: 2
+    		});
+
+    		dispatch_dev("SvelteRegisterComponent", {
+    			component: this,
+    			tagName: "ValueBox",
+    			options,
+    			id: create_fragment$2.name
+    		});
+
+    		const { ctx } = this.$$;
+    		const props = options.props || {};
+
+    		if (/*dataLatest*/ ctx[0] === undefined && !("dataLatest" in props)) {
+    			console.warn("<ValueBox> was created without expected prop 'dataLatest'");
+    		}
+
+    		if (/*dataStream*/ ctx[1] === undefined && !("dataStream" in props)) {
+    			console.warn("<ValueBox> was created without expected prop 'dataStream'");
+    		}
+    	}
+
+    	get dataLatest() {
+    		throw new Error("<ValueBox>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	set dataLatest(value) {
+    		throw new Error("<ValueBox>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	get dataStream() {
+    		throw new Error("<ValueBox>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	set dataStream(value) {
+    		throw new Error("<ValueBox>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	get showGraph() {
+    		throw new Error("<ValueBox>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	set showGraph(value) {
+    		throw new Error("<ValueBox>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+    }
+
+    /* src/WidgetUser.svelte generated by Svelte v3.29.4 */
+    const file$3 = "src/WidgetUser.svelte";
+
+    function get_each_context$2(ctx, list, i) {
+    	const child_ctx = ctx.slice();
+    	child_ctx[7] = list[i];
+    	return child_ctx;
+    }
+
+    // (113:6) {#each dataLatestPayloadArray as dat}
+    function create_each_block$2(ctx) {
+    	let valuebox;
+    	let current;
+
+    	valuebox = new ValueBox({
+    			props: {
+    				dataLatest: /*dat*/ ctx[7],
+    				dataStream: /*dataByKey*/ ctx[2][/*dat*/ ctx[7].key]
+    			},
+    			$$inline: true
+    		});
+
+    	const block = {
+    		c: function create() {
+    			create_component(valuebox.$$.fragment);
+    		},
+    		m: function mount(target, anchor) {
+    			mount_component(valuebox, target, anchor);
+    			current = true;
+    		},
+    		p: function update(ctx, dirty) {
+    			const valuebox_changes = {};
+    			if (dirty & /*dataLatestPayloadArray*/ 2) valuebox_changes.dataLatest = /*dat*/ ctx[7];
+    			if (dirty & /*dataByKey, dataLatestPayloadArray*/ 6) valuebox_changes.dataStream = /*dataByKey*/ ctx[2][/*dat*/ ctx[7].key];
+    			valuebox.$set(valuebox_changes);
+    		},
+    		i: function intro(local) {
+    			if (current) return;
+    			transition_in(valuebox.$$.fragment, local);
+    			current = true;
+    		},
+    		o: function outro(local) {
+    			transition_out(valuebox.$$.fragment, local);
+    			current = false;
+    		},
+    		d: function destroy(detaching) {
+    			destroy_component(valuebox, detaching);
+    		}
+    	};
+
+    	dispatch_dev("SvelteRegisterBlock", {
+    		block,
+    		id: create_each_block$2.name,
+    		type: "each",
+    		source: "(113:6) {#each dataLatestPayloadArray as dat}",
+    		ctx
+    	});
+
+    	return block;
+    }
+
+    function create_fragment$3(ctx) {
+    	let div4;
+    	let div3;
+    	let div0;
+    	let t0_value = /*data*/ ctx[0][0].toUpperCase() + "";
+    	let t0;
+    	let t1;
+    	let div1;
+    	let timeline;
+    	let t2;
+    	let div2;
+    	let current;
+
+    	timeline = new Timeline({
+    			props: { data: /*data*/ ctx[0][1], height: 10 },
+    			$$inline: true
+    		});
+
+    	let each_value = /*dataLatestPayloadArray*/ ctx[1];
+    	validate_each_argument(each_value);
+    	let each_blocks = [];
+
+    	for (let i = 0; i < each_value.length; i += 1) {
+    		each_blocks[i] = create_each_block$2(get_each_context$2(ctx, each_value, i));
+    	}
+
+    	const out = i => transition_out(each_blocks[i], 1, 1, () => {
+    		each_blocks[i] = null;
+    	});
+
+    	const block = {
+    		c: function create() {
+    			div4 = element("div");
+    			div3 = element("div");
+    			div0 = element("div");
+    			t0 = text(t0_value);
+    			t1 = space();
+    			div1 = element("div");
+    			create_component(timeline.$$.fragment);
+    			t2 = space();
+    			div2 = element("div");
+
+    			for (let i = 0; i < each_blocks.length; i += 1) {
+    				each_blocks[i].c();
+    			}
+
+    			attr_dev(div0, "id", "head");
+    			attr_dev(div0, "class", "flex-item svelte-1w4vss9");
+    			add_location(div0, file$3, 102, 4, 2725);
+    			attr_dev(div1, "class", "timeline flex-item svelte-1w4vss9");
+    			add_location(div1, file$3, 106, 4, 2807);
+    			attr_dev(div2, "id", "body");
+    			attr_dev(div2, "class", "flex-item svelte-1w4vss9");
+    			add_location(div2, file$3, 110, 4, 2903);
+    			attr_dev(div3, "class", "flex-container svelte-1w4vss9");
+    			add_location(div3, file$3, 100, 2, 2691);
+    			attr_dev(div4, "class", "widget-box svelte-1w4vss9");
+    			add_location(div4, file$3, 99, 0, 2664);
+    		},
+    		l: function claim(nodes) {
+    			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
+    		},
+    		m: function mount(target, anchor) {
+    			insert_dev(target, div4, anchor);
+    			append_dev(div4, div3);
+    			append_dev(div3, div0);
+    			append_dev(div0, t0);
+    			append_dev(div3, t1);
+    			append_dev(div3, div1);
+    			mount_component(timeline, div1, null);
+    			append_dev(div3, t2);
+    			append_dev(div3, div2);
+
+    			for (let i = 0; i < each_blocks.length; i += 1) {
+    				each_blocks[i].m(div2, null);
+    			}
+
+    			current = true;
+    		},
+    		p: function update(ctx, [dirty]) {
+    			if ((!current || dirty & /*data*/ 1) && t0_value !== (t0_value = /*data*/ ctx[0][0].toUpperCase() + "")) set_data_dev(t0, t0_value);
+    			const timeline_changes = {};
+    			if (dirty & /*data*/ 1) timeline_changes.data = /*data*/ ctx[0][1];
+    			timeline.$set(timeline_changes);
+
+    			if (dirty & /*dataLatestPayloadArray, dataByKey*/ 6) {
+    				each_value = /*dataLatestPayloadArray*/ ctx[1];
+    				validate_each_argument(each_value);
+    				let i;
+
+    				for (i = 0; i < each_value.length; i += 1) {
+    					const child_ctx = get_each_context$2(ctx, each_value, i);
+
+    					if (each_blocks[i]) {
+    						each_blocks[i].p(child_ctx, dirty);
+    						transition_in(each_blocks[i], 1);
+    					} else {
+    						each_blocks[i] = create_each_block$2(child_ctx);
+    						each_blocks[i].c();
+    						transition_in(each_blocks[i], 1);
+    						each_blocks[i].m(div2, null);
+    					}
+    				}
+
+    				group_outros();
+
+    				for (i = each_value.length; i < each_blocks.length; i += 1) {
+    					out(i);
+    				}
+
+    				check_outros();
+    			}
+    		},
+    		i: function intro(local) {
+    			if (current) return;
+    			transition_in(timeline.$$.fragment, local);
+
+    			for (let i = 0; i < each_value.length; i += 1) {
+    				transition_in(each_blocks[i]);
+    			}
+
+    			current = true;
+    		},
+    		o: function outro(local) {
+    			transition_out(timeline.$$.fragment, local);
+    			each_blocks = each_blocks.filter(Boolean);
+
+    			for (let i = 0; i < each_blocks.length; i += 1) {
+    				transition_out(each_blocks[i]);
+    			}
+
+    			current = false;
+    		},
+    		d: function destroy(detaching) {
+    			if (detaching) detach_dev(div4);
+    			destroy_component(timeline);
+    			destroy_each(each_blocks, detaching);
+    		}
+    	};
+
+    	dispatch_dev("SvelteRegisterBlock", {
+    		block,
+    		id: create_fragment$3.name,
+    		type: "component",
+    		source: "",
+    		ctx
+    	});
+
+    	return block;
+    }
+
+    function removeOldEntries(arr, millis) {
+    	let now = Date.now();
+
+    	if (arr[0]) {
+    		while (arr[0].timestamp < now - millis) {
+    			arr.shift();
+    			if (!arr[0]) break;
+    		}
+    	}
+    }
+
+    function clean(str) {
+    	let result = str.match(/[\d\w\.\-]+/);
+    	if (result) return result[0];
+    	return false;
+    }
+
+    function flattenObject(obj, prefix) {
+    	if (!prefix) prefix = "";
+    	let res = {};
+
+    	for (let k in obj) {
+    		switch (typeof obj[k]) {
+    			case "object":
+    				let tmp = flattenObject(obj[k], k + "_");
+    				for (let kk in tmp) {
+    					res[kk] = tmp[kk];
+    				}
+    				break;
+    			default:
+    				res[prefix + k] = obj[k];
+    		}
+    	}
+
+    	return res;
+    }
+
+    function instance$3($$self, $$props, $$invalidate) {
+    	let { $$slots: slots = {}, $$scope } = $$props;
+    	validate_slots("WidgetUser", slots, []);
+
+    	let colorTable = {
+    		red: "Red",
+    		r: "Red",
+    		green: "LimeGreen",
+    		g: "LimeGreen",
+    		blue: "DodgerBlue",
+    		b: "DodgerBlue",
+    		yellow: "#EEc700",
+    		orange: "DarkOrange",
+    		violet: "MediumOrchid",
+    		palette: [
+    			"MediumVioletRed",
+    			"OliveDrab",
+    			"DeepSkyBlue",
+    			"Chocolate",
+    			"SlateBlue",
+    			"Tomato",
+    			"LightSeaGreen"
+    		]
+    	};
+
+    	let { data = [] } = $$props;
+    	let { showGraphs = true } = $$props;
+    	let dataLatest;
+    	let dataLatestPayload;
+    	let dataLatestPayloadArray = []; // try to split up the string in values or key-value-pairs
+    	let dataByKey = {};
+    	const writable_props = ["data", "showGraphs"];
+
+    	Object.keys($$props).forEach(key => {
+    		if (!~writable_props.indexOf(key) && key.slice(0, 2) !== "$$") console.warn(`<WidgetUser> was created with unknown prop '${key}'`);
+    	});
+
+    	$$self.$$set = $$props => {
+    		if ("data" in $$props) $$invalidate(0, data = $$props.data);
+    		if ("showGraphs" in $$props) $$invalidate(3, showGraphs = $$props.showGraphs);
+    	};
+
+    	$$self.$capture_state = () => ({
+    		Timeline,
+    		ValueBox,
+    		colorTable,
+    		data,
+    		showGraphs,
+    		dataLatest,
+    		dataLatestPayload,
+    		dataLatestPayloadArray,
+    		dataByKey,
+    		removeOldEntries,
+    		clean,
+    		flattenObject
+    	});
+
+    	$$self.$inject_state = $$props => {
+    		if ("colorTable" in $$props) $$invalidate(6, colorTable = $$props.colorTable);
+    		if ("data" in $$props) $$invalidate(0, data = $$props.data);
+    		if ("showGraphs" in $$props) $$invalidate(3, showGraphs = $$props.showGraphs);
+    		if ("dataLatest" in $$props) $$invalidate(4, dataLatest = $$props.dataLatest);
+    		if ("dataLatestPayload" in $$props) $$invalidate(5, dataLatestPayload = $$props.dataLatestPayload);
+    		if ("dataLatestPayloadArray" in $$props) $$invalidate(1, dataLatestPayloadArray = $$props.dataLatestPayloadArray);
+    		if ("dataByKey" in $$props) $$invalidate(2, dataByKey = $$props.dataByKey);
+    	};
+
+    	if ($$props && "$$inject" in $$props) {
+    		$$self.$inject_state($$props.$$inject);
+    	}
+
+    	$$self.$$.update = () => {
+    		if ($$self.$$.dirty & /*data, dataLatest, dataLatestPayload, dataLatestPayloadArray, dataByKey*/ 55) {
+    			 {
+    				$$invalidate(4, dataLatest = data[1][data[1].length - 1]);
+
+    				//console.log(dataLatest);
+    				$$invalidate(5, dataLatestPayload = dataLatest.origPayload);
+
+    				try {
+    					$$invalidate(5, dataLatestPayload = JSON.parse(dataLatest.origPayload));
+    					$$invalidate(5, dataLatestPayload = flattenObject(dataLatestPayload));
+    				} catch(error) {
+    					
+    				}
+
+    				$$invalidate(1, dataLatestPayloadArray = JSON.stringify(dataLatestPayload).split(","));
+    				let paletteIndex = 0;
+
+    				for (let i = 0; i < dataLatestPayloadArray.length; i++) {
+    					let dat = dataLatestPayloadArray[i];
+    					dat = dat.split(":");
+    					let key, value;
+
+    					if (dat.length == 2) {
+    						key = clean(dat[0]);
+    						value = clean(dat[1]);
+    					} else {
+    						key = "value_" + i;
+    						value = clean(dat[0]);
+    					}
+
+    					let color = colorTable[key.toLowerCase()]
+    					? colorTable[key.toLowerCase()]
+    					: colorTable.palette[paletteIndex++ % colorTable.palette.length];
+
+    					$$invalidate(1, dataLatestPayloadArray[i] = { key, value, color }, dataLatestPayloadArray);
+    					if (!dataByKey[key]) $$invalidate(2, dataByKey[key] = [], dataByKey);
+
+    					dataByKey[key].push({
+    						timestamp: dataLatest.timestamp,
+    						value,
+    						color
+    					});
+
+    					removeOldEntries(dataByKey[key], 5000);
+    				}
+    			} // console.log(dataByKey);
+    		}
+    	};
+
+    	return [data, dataLatestPayloadArray, dataByKey, showGraphs];
     }
 
     class WidgetUser extends SvelteComponentDev {
     	constructor(options) {
     		super(options);
-    		init(this, options, instance$1, create_fragment$1, safe_not_equal, { data: 0 });
+    		init(this, options, instance$3, create_fragment$3, safe_not_equal, { data: 0, showGraphs: 3 });
 
     		dispatch_dev("SvelteRegisterComponent", {
     			component: this,
     			tagName: "WidgetUser",
     			options,
-    			id: create_fragment$1.name
+    			id: create_fragment$3.name
     		});
     	}
 
@@ -1074,81 +2004,38 @@ var app = (function () {
     	set data(value) {
     		throw new Error("<WidgetUser>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
     	}
+
+    	get showGraphs() {
+    		throw new Error("<WidgetUser>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	set showGraphs(value) {
+    		throw new Error("<WidgetUser>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
     }
 
     /* src/App.svelte generated by Svelte v3.29.4 */
 
     const { Object: Object_1 } = globals;
-    const file$2 = "src/App.svelte";
+    const file$4 = "src/App.svelte";
 
-    function get_each_context$1(ctx, list, i) {
+    function get_each_context$3(ctx, list, i) {
     	const child_ctx = ctx.slice();
     	child_ctx[4] = list[i];
     	return child_ctx;
     }
 
-    // (29:4) {:else}
-    function create_else_block(ctx) {
-    	let t;
-
-    	const block = {
-    		c: function create() {
-    			t = text("Start");
-    		},
-    		m: function mount(target, anchor) {
-    			insert_dev(target, t, anchor);
-    		},
-    		d: function destroy(detaching) {
-    			if (detaching) detach_dev(t);
-    		}
-    	};
-
-    	dispatch_dev("SvelteRegisterBlock", {
-    		block,
-    		id: create_else_block.name,
-    		type: "else",
-    		source: "(29:4) {:else}",
-    		ctx
-    	});
-
-    	return block;
-    }
-
-    // (27:4) {#if $appActive}
-    function create_if_block(ctx) {
-    	let t;
-
-    	const block = {
-    		c: function create() {
-    			t = text("Stop");
-    		},
-    		m: function mount(target, anchor) {
-    			insert_dev(target, t, anchor);
-    		},
-    		d: function destroy(detaching) {
-    			if (detaching) detach_dev(t);
-    		}
-    	};
-
-    	dispatch_dev("SvelteRegisterBlock", {
-    		block,
-    		id: create_if_block.name,
-    		type: "if",
-    		source: "(27:4) {#if $appActive}",
-    		ctx
-    	});
-
-    	return block;
-    }
-
-    // (37:2) {#each userdataArray as userdata (userdata[0])}
-    function create_each_block$1(key_1, ctx) {
+    // (45:2) {#each userdataArray as userdata (userdata[0])}
+    function create_each_block$3(key_1, ctx) {
     	let first;
     	let widgetuser;
     	let current;
 
     	widgetuser = new WidgetUser({
-    			props: { data: /*userdata*/ ctx[4] },
+    			props: {
+    				data: /*userdata*/ ctx[4],
+    				showGraphs: /*showGraphs*/ ctx[0]
+    			},
     			$$inline: true
     		});
 
@@ -1167,7 +2054,8 @@ var app = (function () {
     		},
     		p: function update(ctx, dirty) {
     			const widgetuser_changes = {};
-    			if (dirty & /*userdataArray*/ 1) widgetuser_changes.data = /*userdata*/ ctx[4];
+    			if (dirty & /*userdataArray*/ 2) widgetuser_changes.data = /*userdata*/ ctx[4];
+    			if (dirty & /*showGraphs*/ 1) widgetuser_changes.showGraphs = /*showGraphs*/ ctx[0];
     			widgetuser.$set(widgetuser_changes);
     		},
     		i: function intro(local) {
@@ -1187,109 +2075,80 @@ var app = (function () {
 
     	dispatch_dev("SvelteRegisterBlock", {
     		block,
-    		id: create_each_block$1.name,
+    		id: create_each_block$3.name,
     		type: "each",
-    		source: "(37:2) {#each userdataArray as userdata (userdata[0])}",
+    		source: "(45:2) {#each userdataArray as userdata (userdata[0])}",
     		ctx
     	});
 
     	return block;
     }
 
-    function create_fragment$2(ctx) {
+    function create_fragment$4(ctx) {
+    	let div1;
     	let div0;
     	let h2;
     	let t1;
-    	let button;
-    	let t2;
-    	let div1;
+    	let div2;
     	let each_blocks = [];
     	let each_1_lookup = new Map();
     	let current;
-    	let mounted;
-    	let dispose;
-
-    	function select_block_type(ctx, dirty) {
-    		if (/*$appActive*/ ctx[1]) return create_if_block;
-    		return create_else_block;
-    	}
-
-    	let current_block_type = select_block_type(ctx);
-    	let if_block = current_block_type(ctx);
-    	let each_value = /*userdataArray*/ ctx[0];
+    	let each_value = /*userdataArray*/ ctx[1];
     	validate_each_argument(each_value);
     	const get_key = ctx => /*userdata*/ ctx[4][0];
-    	validate_each_keys(ctx, each_value, get_each_context$1, get_key);
+    	validate_each_keys(ctx, each_value, get_each_context$3, get_key);
 
     	for (let i = 0; i < each_value.length; i += 1) {
-    		let child_ctx = get_each_context$1(ctx, each_value, i);
+    		let child_ctx = get_each_context$3(ctx, each_value, i);
     		let key = get_key(child_ctx);
-    		each_1_lookup.set(key, each_blocks[i] = create_each_block$1(key, child_ctx));
+    		each_1_lookup.set(key, each_blocks[i] = create_each_block$3(key, child_ctx));
     	}
 
     	const block = {
     		c: function create() {
+    			div1 = element("div");
     			div0 = element("div");
     			h2 = element("h2");
     			h2.textContent = "Laborwoche Dashboard";
     			t1 = space();
-    			button = element("button");
-    			if_block.c();
-    			t2 = space();
-    			div1 = element("div");
+    			div2 = element("div");
 
     			for (let i = 0; i < each_blocks.length; i += 1) {
     				each_blocks[i].c();
     			}
 
-    			add_location(h2, file$2, 23, 2, 489);
-    			add_location(button, file$2, 25, 2, 522);
-    			attr_dev(div0, "id", "head");
-    			attr_dev(div0, "class", "svelte-1c2xza4");
-    			add_location(div0, file$2, 21, 0, 470);
-    			attr_dev(div1, "id", "user-widgets");
-    			add_location(div1, file$2, 35, 0, 645);
+    			add_location(h2, file$4, 25, 4, 517);
+    			set_style(div0, "flex-grow", "1");
+    			add_location(div0, file$4, 24, 2, 486);
+    			attr_dev(div1, "id", "head");
+    			attr_dev(div1, "class", "svelte-as6vko");
+    			add_location(div1, file$4, 22, 0, 467);
+    			attr_dev(div2, "id", "user-widgets");
+    			add_location(div2, file$4, 40, 0, 736);
     		},
     		l: function claim(nodes) {
     			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
     		},
     		m: function mount(target, anchor) {
-    			insert_dev(target, div0, anchor);
-    			append_dev(div0, h2);
-    			append_dev(div0, t1);
-    			append_dev(div0, button);
-    			if_block.m(button, null);
-    			insert_dev(target, t2, anchor);
     			insert_dev(target, div1, anchor);
+    			append_dev(div1, div0);
+    			append_dev(div0, h2);
+    			insert_dev(target, t1, anchor);
+    			insert_dev(target, div2, anchor);
 
     			for (let i = 0; i < each_blocks.length; i += 1) {
-    				each_blocks[i].m(div1, null);
+    				each_blocks[i].m(div2, null);
     			}
 
     			current = true;
-
-    			if (!mounted) {
-    				dispose = listen_dev(button, "click", /*toggleAppActive*/ ctx[2], false, false, false);
-    				mounted = true;
-    			}
     		},
     		p: function update(ctx, [dirty]) {
-    			if (current_block_type !== (current_block_type = select_block_type(ctx))) {
-    				if_block.d(1);
-    				if_block = current_block_type(ctx);
-
-    				if (if_block) {
-    					if_block.c();
-    					if_block.m(button, null);
-    				}
-    			}
-
-    			if (dirty & /*userdataArray*/ 1) {
-    				const each_value = /*userdataArray*/ ctx[0];
+    			if (dirty & /*userdataArray, showGraphs*/ 3) {
+    				const each_value = /*userdataArray*/ ctx[1];
     				validate_each_argument(each_value);
     				group_outros();
-    				validate_each_keys(ctx, each_value, get_each_context$1, get_key);
-    				each_blocks = update_keyed_each(each_blocks, dirty, get_key, 1, ctx, each_value, each_1_lookup, div1, outro_and_destroy_block, create_each_block$1, null, get_each_context$1);
+    				validate_each_keys(ctx, each_value, get_each_context$3, get_key);
+    				each_blocks = update_keyed_each(each_blocks, dirty, get_key, 1, ctx, each_value, each_1_lookup, div2, outro_and_destroy_block, create_each_block$3, null, get_each_context$3);
     				check_outros();
     			}
     		},
@@ -1310,23 +2169,19 @@ var app = (function () {
     			current = false;
     		},
     		d: function destroy(detaching) {
-    			if (detaching) detach_dev(div0);
-    			if_block.d();
-    			if (detaching) detach_dev(t2);
     			if (detaching) detach_dev(div1);
+    			if (detaching) detach_dev(t1);
+    			if (detaching) detach_dev(div2);
 
     			for (let i = 0; i < each_blocks.length; i += 1) {
     				each_blocks[i].d();
     			}
-
-    			mounted = false;
-    			dispose();
     		}
     	};
 
     	dispatch_dev("SvelteRegisterBlock", {
     		block,
-    		id: create_fragment$2.name,
+    		id: create_fragment$4.name,
     		type: "component",
     		source: "",
     		ctx
@@ -1335,19 +2190,16 @@ var app = (function () {
     	return block;
     }
 
-    function instance$2($$self, $$props, $$invalidate) {
+    function instance$4($$self, $$props, $$invalidate) {
     	let $dataByUser;
-    	let $appActive;
     	validate_store(dataByUser, "dataByUser");
-    	component_subscribe($$self, dataByUser, $$value => $$invalidate(3, $dataByUser = $$value));
-    	validate_store(appActive, "appActive");
-    	component_subscribe($$self, appActive, $$value => $$invalidate(1, $appActive = $$value));
+    	component_subscribe($$self, dataByUser, $$value => $$invalidate(2, $dataByUser = $$value));
     	let { $$slots: slots = {}, $$scope } = $$props;
     	validate_slots("App", slots, []);
+    	let showGraphs = true;
 
-    	function toggleAppActive() {
-    		let newState = !$appActive;
-    		appActive.set(newState);
+    	function toggleShowGraphs() {
+    		$$invalidate(0, showGraphs = !showGraphs);
     	}
 
     	const writable_props = [];
@@ -1362,14 +2214,15 @@ var app = (function () {
     		dataByTime,
     		dataByUser,
     		WidgetUser,
-    		toggleAppActive,
+    		showGraphs,
+    		toggleShowGraphs,
     		userdataArray,
-    		$dataByUser,
-    		$appActive
+    		$dataByUser
     	});
 
     	$$self.$inject_state = $$props => {
-    		if ("userdataArray" in $$props) $$invalidate(0, userdataArray = $$props.userdataArray);
+    		if ("showGraphs" in $$props) $$invalidate(0, showGraphs = $$props.showGraphs);
+    		if ("userdataArray" in $$props) $$invalidate(1, userdataArray = $$props.userdataArray);
     	};
 
     	let userdataArray;
@@ -1379,27 +2232,24 @@ var app = (function () {
     	}
 
     	$$self.$$.update = () => {
-    		if ($$self.$$.dirty & /*$dataByUser*/ 8) {
-    			// $: console.log($dataLatest);
-    			// $: console.log($dataByTime);
-    			// $: console.log($dataByUser);
-    			 $$invalidate(0, userdataArray = Object.entries($dataByUser));
+    		if ($$self.$$.dirty & /*$dataByUser*/ 4) {
+    			 $$invalidate(1, userdataArray = Object.entries($dataByUser));
     		}
     	};
 
-    	return [userdataArray, $appActive, toggleAppActive];
+    	return [showGraphs, userdataArray];
     }
 
     class App extends SvelteComponentDev {
     	constructor(options) {
     		super(options);
-    		init(this, options, instance$2, create_fragment$2, safe_not_equal, {});
+    		init(this, options, instance$4, create_fragment$4, safe_not_equal, {});
 
     		dispatch_dev("SvelteRegisterComponent", {
     			component: this,
     			tagName: "App",
     			options,
-    			id: create_fragment$2.name
+    			id: create_fragment$4.name
     		});
     	}
     }
