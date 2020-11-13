@@ -616,17 +616,14 @@ var app = (function () {
     	let ws = new WebSocket("ws://localhost:1880/ws/receive");
     	
     	ws.onopen = function(e) {
-    		console.log("Opened connection");
-    		console.log(e);
+    		console.log("Opened websocket connection");
+    		// console.log(e);
     	};
 
     	ws.onmessage = function(e) {
     		let obj = JSON.parse(e.data);
     		obj.timestamp = Date.now();
     		obj.uid = uid++;
-    		// if (dataLatest) console.log(dataLatest);
-    		// console.log(obj);
-    		// console.log('---------------------------------');
     		set(obj);
     	};
     });
@@ -695,7 +692,7 @@ var app = (function () {
     	return child_ctx;
     }
 
-    // (57:4) {#each rects as rect (rect.uid)}
+    // (54:4) {#each rects as rect (rect.uid)}
     function create_each_block(key_1, ctx) {
     	let rect0;
     	let rect0_x_value;
@@ -719,13 +716,13 @@ var app = (function () {
     			attr_dev(rect0, "width", rect0_width_value = 2);
     			attr_dev(rect0, "height", /*height*/ ctx[1]);
     			attr_dev(rect0, "visibility", rect0_visibility_value = /*rect*/ ctx[7].visibility);
-    			add_location(rect0, file, 57, 6, 1545);
+    			add_location(rect0, file, 54, 6, 1435);
     			attr_dev(rect1, "x", rect1_x_value = /*rect*/ ctx[7].x - /*width*/ ctx[0]);
     			attr_dev(rect1, "y", rect1_y_value = 0);
     			attr_dev(rect1, "width", rect1_width_value = 2);
     			attr_dev(rect1, "height", /*height*/ ctx[1]);
     			attr_dev(rect1, "visibility", rect1_visibility_value = /*rect*/ ctx[7].visibility);
-    			add_location(rect1, file, 58, 6, 1632);
+    			add_location(rect1, file, 55, 6, 1522);
     			this.first = rect0;
     		},
     		m: function mount(target, anchor) {
@@ -767,7 +764,7 @@ var app = (function () {
     		block,
     		id: create_each_block.name,
     		type: "each",
-    		source: "(57:4) {#each rects as rect (rect.uid)}",
+    		source: "(54:4) {#each rects as rect (rect.uid)}",
     		ctx
     	});
 
@@ -802,10 +799,10 @@ var app = (function () {
 
     			attr_dev(g, "id", "mover");
     			attr_dev(g, "transform", g_transform_value = "translate(" + /*animationPosition*/ ctx[2] + " 0)");
-    			add_location(g, file, 55, 2, 1442);
+    			add_location(g, file, 52, 2, 1332);
     			attr_dev(svg, "width", /*width*/ ctx[0]);
     			attr_dev(svg, "height", /*height*/ ctx[1]);
-    			add_location(svg, file, 54, 0, 1417);
+    			add_location(svg, file, 51, 0, 1307);
     		},
     		l: function claim(nodes) {
     			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");

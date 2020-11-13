@@ -2,9 +2,6 @@
   import { onMount } from 'svelte';
   import { appActive } from './stores.js';
   
-  // import TimelineRect from './TimelineRect.svelte';
-  // import { fade, fly } from 'svelte/transition';
-  
   // get data of that user in form [{user:'...', origPayload:'...', timestamp:'...'}, ...]
   export let data = [];
   export let width = 300;

@@ -17,17 +17,14 @@ export const dataLatest = writable({}, function start(set) {
 	let ws = new WebSocket("ws://localhost:1880/ws/receive");
 	
 	ws.onopen = function(e) {
-		console.log("Opened connection");
-		console.log(e);
+		console.log("Opened websocket connection");
+		// console.log(e);
 	}
 
 	ws.onmessage = function(e) {
 		let obj = JSON.parse(e.data);
 		obj.timestamp = Date.now();
 		obj.uid = uid++;
-		// if (dataLatest) console.log(dataLatest);
-		// console.log(obj);
-		// console.log('---------------------------------');
 		set(obj);
 	}
 });
